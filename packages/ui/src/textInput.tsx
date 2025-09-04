@@ -6,7 +6,7 @@ export const TextInput = ({
     label
 }: {
     placeholder: string;
-    onChange: (value: string) => void;
+    onChange: (value: any) => void;
     label: string;
 }) => {
     return <div className="pt-2">

@@ -4,6 +4,7 @@ const prisma = new PrismaClient()
 
 async function main() {
     await prisma.onRampTransaction.deleteMany();
+    await prisma.balance.deleteMany();
     await prisma.user.deleteMany();
     const alice = await prisma.user.upsert({
         where: { number: '9999999999' },
@@ -12,6 +13,12 @@ async function main() {
             number: '9999999999',
             password: await bcrypt.hash("alice", 10),
             name: 'alice',
+            Balance: {
+                create: {
+                    amount: 20000,
+                    locked: 0
+                }
+            },
             OnRampTransaction: {
                 create: {
                     startTime: new Date(),
@@ -30,6 +37,12 @@ async function main() {
             number: '9999999998',
             password: await bcrypt.hash("bob", 10),
             name: 'bob',
+            Balance: {
+                create: {
+                    amount: 20000,
+                    locked: 0
+                }
+            },
             OnRampTransaction: {
                 create: {
                     startTime: new Date(),

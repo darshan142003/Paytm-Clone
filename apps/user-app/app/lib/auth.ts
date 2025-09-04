@@ -26,7 +26,7 @@ export const authOptions = {
                         return {
                             id: existingUser.id.toString(),
                             name: existingUser.name,
-                            email: existingUser.number
+                            number: existingUser.number
                         }
                     }
                     return null;
@@ -43,7 +43,7 @@ export const authOptions = {
                     return {
                         id: user.id.toString(),
                         name: user.name,
-                        email: user.number
+                        number: user.number
                     }
                 } catch (e) {
                     console.error(e);
@@ -55,10 +55,17 @@ export const authOptions = {
     ],
     secret: process.env.JWT_SECRET || "secret",
     callbacks: {
+        async jwt({ token, user }: any) {
+            if (user) {
+                token.number = (user as any).number; // persist custom field
+            }
+            return token;
+        },
         // TODO: can u fix the type here? Using any is bad
         async session({ session, token }: any) {
             if (session.user) {
                 session.user.id = token.sub as string; // add id into session
+                session.user.number = token.number as string;
             }
             return session;
         },

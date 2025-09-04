@@ -1,15 +1,14 @@
 import { Card } from "@repo/ui/card"
 import { randomUUID } from "crypto"
 
-export const OnRampTransactions = ({
+export const Transactions = ({
     transactions
 }: {
     transactions: {
-        time: Date,
-        amount: number,
-        // TODO: Can the type of `status` be more specific?
         status: string,
-        provider: string
+        amount: number,
+        time: Date
+
     }[]
 }) => {
     if (!transactions.length) {
@@ -20,18 +19,18 @@ export const OnRampTransactions = ({
         </Card>
     }
     return <Card title="Recent Transactions">
-        <div className="pt-2">
+        <div className="pt-2 space-y-3">
             {transactions.map(t => <div key={randomUUID()} className="flex justify-between">
                 <div>
                     <div className="text-sm">
-                        Received INR
+                        {t.status} INR
                     </div>
                     <div className="text-slate-600 text-xs">
                         {t.time.toDateString()}
                     </div>
                 </div>
                 <div className="flex flex-col justify-center">
-                    + Rs {t.amount / 100}
+                    {t.status == 'Sent' ? "-" : "+"}  Rs {t.amount / 100}
                 </div>
 
             </div>)}
