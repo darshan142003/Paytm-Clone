@@ -1,3 +1,4 @@
+import Prefetcher from "../../components/Prefetcher";
 import { SidebarItem } from "../../components/SidebarItem";
 
 export default function Layout({
@@ -7,6 +8,7 @@ export default function Layout({
 }): JSX.Element {
     return (
         <div className="flex">
+            <Prefetcher routes={["/dashboard", "/transfer", "/transactions", "/p2p"]} />
             <div className="w-72 border-r border-slate-300 min-h-screen mr-4 pt-28">
                 <div>
                     <SidebarItem href={"/dashboard"} icon={<HomeIcon />} title="Home" />

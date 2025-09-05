@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 const prisma = new PrismaClient()
 
 async function main() {
+    await prisma.transactions.deleteMany();
     await prisma.onRampTransaction.deleteMany();
     await prisma.balance.deleteMany();
     await prisma.user.deleteMany();

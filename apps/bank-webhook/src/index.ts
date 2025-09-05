@@ -13,22 +13,39 @@ app.post("/hdfcWebhook", async (req, res) => {
         amount: string
     } = {
         token: req.body.token,
-        userId: req.body.user_identifier,
+        userId: req.body.userId,
         amount: req.body.amount
     };
 
+    const transaction = await db.onRampTransaction.findUnique({
+        where: {
+            token: paymentInformation.token
+        }
+    })
+
+    if (transaction?.status === "Success") {
+        return res.json({
+            msg: "transaction already made!"
+        })
+    }
     try {
         await db.$transaction([
-            db.balance.updateMany({
+            db.balance.upsert({
                 where: {
                     userId: Number(paymentInformation.userId)
                 },
-                data: {
+                update: {
                     amount: {
                         // You can also get this from your DB
                         increment: Number(paymentInformation.amount)
                     }
+                },
+                create: {
+                    userId: Number(paymentInformation.userId),
+                    amount: Number(paymentInformation.amount),
+                    locked: 0
                 }
+
             }),
             db.onRampTransaction.updateMany({
                 where: {

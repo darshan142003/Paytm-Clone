@@ -28,6 +28,9 @@ export async function createP2PTransaction(amount: number, toUserNumber: string)
         const userAmount = fromUser?.amount || 0;
         if (userAmount >= amount) {
             await prisma.$transaction([
+
+                prisma.$queryRaw`SELECT * FROM "Balance" WHERE "userId" = ${Number(fromUserId)} FOR UPDATE`,
+
                 prisma.balance.update({
                     where: { userId: Number(fromUserId) },
                     data: { amount: { decrement: amount } }
