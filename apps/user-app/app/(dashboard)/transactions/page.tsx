@@ -26,7 +26,7 @@ async function getTransactions(): Promise<TransactionType[]> {
     return txns.map((t: typeof txns[number]): TransactionType => ({
         status: t.status,
         amount: t.amount,
-        time: t.startTime
+        time: new Date(t.startTime)
     }));
 }
 
