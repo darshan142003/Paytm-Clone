@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 
+
 // Factory to create Prisma client
 const createPrisma = () => {
   if (!process.env.DATABASE_URL) {
