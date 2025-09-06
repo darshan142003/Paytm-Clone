@@ -1,34 +1,33 @@
 import { PrismaClient } from '@prisma/client'
 
+// Recursive stub factory for Prisma client
+const createStub = (): any => {
+  const handler: ProxyHandler<any> = {
+    get: (_, prop) => new Proxy(() => { }, {
+      get: () => createStub(), // Recursively return stub for nested properties
+      apply: (_, __, args) => {
+        console.warn(`Prisma.${String(prop)} called, skipping DB query.`)
+
+        // Return realistic default values
+        if (prop === 'create') return Promise.resolve(args[0])
+        if (prop === 'findUnique') return Promise.resolve(null)
+        if (prop === 'findMany') return Promise.resolve([])
+        if (prop === 'update') return Promise.resolve(args[1])
+        if (prop === 'delete') return Promise.resolve(null)
+        return Promise.resolve(null)
+      }
+    })
+  }
+  return new Proxy({}, handler)
+}
+
 // Factory to create Prisma client
 const createPrisma = () => {
   if (!process.env.DATABASE_URL) {
     console.warn('No DATABASE_URL found — returning build-safe stub Prisma client')
-
-    // Proxy to intercept any Prisma queries
-    const handler: ProxyHandler<any> = {
-      get: (_, prop) => {
-        return new Proxy(() => { }, {
-          apply: (_, __, args) => {
-            console.warn(`Prisma.${String(prop)} called, but DATABASE_URL not set. Skipping query.`)
-
-            // Return realistic default values
-            if (prop.toString().startsWith('findMany')) return Promise.resolve([])
-            if (prop.toString().startsWith('findUnique')) return Promise.resolve(null)
-            if (prop.toString().startsWith('create')) return Promise.resolve(args[0])
-            if (prop.toString().startsWith('update')) return Promise.resolve(args[1])
-            if (prop.toString().startsWith('delete')) return Promise.resolve(null)
-
-            return Promise.resolve(null)
-          }
-        })
-      }
-    }
-
-    return new Proxy({}, handler) as unknown as PrismaClient
+    return createStub() as unknown as PrismaClient
   }
 
-  // Normal Prisma client
   return new PrismaClient()
 }
 
