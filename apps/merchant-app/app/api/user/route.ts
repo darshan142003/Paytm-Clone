@@ -3,6 +3,7 @@ import prisma from "@repo/db/client"
 import { randomUUID } from "crypto"
 
 
+
 export const GET = async () => {
     await prisma.merchant.create({
         data: {
