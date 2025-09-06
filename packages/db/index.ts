@@ -1,43 +1,42 @@
 import { PrismaClient } from '@prisma/client'
 
-// Recursive stub handler for Prisma during build/CI
-const createPrismaStub = (): any => {
-  const handler: ProxyHandler<any> = {
-    get: (_, prop) => {
-      return new Proxy(() => { }, {
-        get: () => createPrismaStub(), // nested model access like prisma.merchant.findMany
-        apply: (_, __, args) => {
-          console.warn(`Prisma.${String(prop)} called — skipping DB query.`)
-          if (prop.toString().startsWith('create')) return Promise.resolve(args[0])
-          if (prop.toString().startsWith('findUnique')) return Promise.resolve(null)
-          if (prop.toString().startsWith('findMany')) return Promise.resolve([])
-          if (prop.toString().startsWith('update')) return Promise.resolve(args[1])
-          if (prop.toString().startsWith('delete')) return Promise.resolve(null)
-          return Promise.resolve(null)
-        },
+// Create a stub for build/CI when DATABASE_URL is missing
+const createPrismaStub = () => {
+  console.warn('No DATABASE_URL found — using build-safe Prisma stub')
+
+  const modelHandler: ProxyHandler<any> = {
+    get: (_, modelName: string) => {
+      // Each model is a proxy too
+      return new Proxy({}, {
+        get: (_, methodName: string) => {
+          return async (...args: any[]) => {
+            console.warn(`Prisma.${modelName}.${methodName} called, but DATABASE_URL not set. Skipping query.`)
+
+            // Return sensible defaults for common methods
+            if (['findMany', 'findManyOrThrow'].includes(methodName)) return []
+            if (['findUnique', 'findFirst', 'findUniqueOrThrow', 'findFirstOrThrow'].includes(methodName)) return null
+            if (methodName === 'create') return args[0] // return the input data
+            if (methodName === 'update') return args[1] // return the update data
+            if (methodName === 'delete') return null
+            return null
+          }
+        }
       })
-    },
+    }
   }
-  return new Proxy({}, handler)
+
+  return new Proxy({}, modelHandler) as unknown as PrismaClient
 }
 
-// Factory to create Prisma client
-const createPrisma = (): PrismaClient => {
-  if (!process.env.DATABASE_URL) {
-    console.warn('No DATABASE_URL found — using build-safe Prisma stub')
-    return createPrismaStub() as unknown as PrismaClient
-  }
-  return new PrismaClient()
-}
-
-// Singleton pattern
 declare global {
   var prismaGlobal: PrismaClient | undefined
 }
 
-const prisma: PrismaClient = globalThis.prismaGlobal ?? createPrisma()
+// Use real Prisma if DATABASE_URL exists, otherwise stub
+const prisma: PrismaClient = globalThis.prismaGlobal ?? (
+  process.env.DATABASE_URL ? new PrismaClient() : createPrismaStub()
+)
 
-// Persist Prisma client in dev to prevent multiple instances
 if (process.env.NODE_ENV !== 'production' && process.env.DATABASE_URL) {
   globalThis.prismaGlobal = prisma
 }
