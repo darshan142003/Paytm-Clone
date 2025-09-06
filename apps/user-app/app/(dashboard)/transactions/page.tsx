@@ -15,20 +15,19 @@ async function getTransactions(): Promise<TransactionType[]> {
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
 
-    if (!userId) return []; // handle no session
+    if (!userId) return [];
 
+    // Use Prisma's generated types
     const txns = await prisma.transactions.findMany({
-        where: {
-            userId: Number(userId)
-        }
+        where: { userId: Number(userId) }
     });
 
-    // Explicitly type 't'
-    return txns.map((t): TransactionType => ({
+    // Explicitly cast 't' to Prisma type
+    return txns.map((t: typeof txns[number]): TransactionType => ({
         status: t.status,
         amount: t.amount,
         time: t.startTime
-    }))
+    }));
 }
 
 export default async function TransactionsPage() {
@@ -40,3 +39,5 @@ export default async function TransactionsPage() {
         </div>
     )
 }
+
+

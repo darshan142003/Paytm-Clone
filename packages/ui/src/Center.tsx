@@ -7,3 +7,4 @@ export const Center = ({ children }: { children: React.ReactNode }) => {
         </div>
     </div>
 }
+
