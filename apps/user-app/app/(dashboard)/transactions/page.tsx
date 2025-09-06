@@ -4,9 +4,18 @@ import { authOptions } from '../../lib/auth';
 import prisma from '@repo/db/client';
 import { Transactions } from '../../../components/Transactions';
 
-async function getTransactions() {
+// Define a type for a transaction
+type TransactionType = {
+    status: string
+    amount: number
+    time: Date
+}
+
+async function getTransactions(): Promise<TransactionType[]> {
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
+
+    if (!userId) return []; // handle no session
 
     const txns = await prisma.transactions.findMany({
         where: {
@@ -14,15 +23,15 @@ async function getTransactions() {
         }
     });
 
-    return txns.map(t => ({
+    // Explicitly type 't'
+    return txns.map((t): TransactionType => ({
         status: t.status,
         amount: t.amount,
         time: t.startTime
     }))
 }
 
-export default async function () {
-
+export default async function TransactionsPage() {
     const transactions = await getTransactions();
 
     return (
