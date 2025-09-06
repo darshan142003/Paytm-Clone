@@ -1,31 +1,31 @@
-name : Build Succeeds on PR
-
+name: Build Succeeds on PR
 
 on:
   pull_request:
     branches:
-      - main
-
+      - master
 
 jobs:
   builds:
     name: Build the project
     runs-on: ubuntu-latest
+    env:
+      # Dummy env vars to satisfy Turbo and Next.js
+      GOOGLE_CLIENT_ID: dummy
+      GOOGLE_CLIENT_SECRET: dummy
+      NEXTAUTH_SECRET: dummy
+      DATABASE_URL: ""   # Empty so Prisma doesn't try to connect
+      SKIP_DB: "true"    # Optional: if you use a skip-DB guard
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.jobs
+
+      - name: Use Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      
       - name: Install Dependencies
         run: npm install
-      
-      - name: Generate prisma client
-        run: npm run db:generate
-      
+
       - name: Run Build
         run: npm run build
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
